@@ -55,7 +55,7 @@ public class OrderService {
             totalPrice = totalPrice.add(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
         order.setTotalPrice(totalPrice);
-        order.setStatus("В работе");
+        order.setStatus("IN_WORK");
         order.setCreatedAt(LocalDateTime.now());
         order.setOrderItems(orderItems);
         return orderRepository.save(order);

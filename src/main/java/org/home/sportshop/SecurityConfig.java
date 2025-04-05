@@ -24,14 +24,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtAuthFilter jwtAuthFilter = new JwtAuthFilter(jwtUtil);
-        
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
@@ -40,31 +36,36 @@ public class SecurityConfig {
                         // Public
                         .requestMatchers("/auth/**", "/").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        
+
                         // Products
                         .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("ADMIN")
-                        
+
                         // Orders
                         .requestMatchers(HttpMethod.GET, "/orders/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/orders/my").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/orders/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/orders/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/orders/**").hasRole("ADMIN")
-                        
+
                         // Customers
-                        .requestMatchers("/customers").permitAll()
-                        
+                        .requestMatchers(HttpMethod.GET, "/customers").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/customers").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/customers/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/customers/**").hasAnyRole("ADMIN")
+
                         // Other
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        
+
         return http.build();
     }
     
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
