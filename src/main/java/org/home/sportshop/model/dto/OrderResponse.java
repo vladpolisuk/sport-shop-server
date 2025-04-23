@@ -4,9 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.home.sportshop.delivery.DeliveryService;
 import org.home.sportshop.model.Order;
 import org.home.sportshop.model.OrderItem;
+import org.home.sportshop.payment.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderResponse {
     private Long id;
     private Long customerId;
@@ -17,6 +22,21 @@ public class OrderResponse {
     private String status;
     private LocalDateTime createdAt;
     private List<OrderItemDto> orderItems;
+    private Long deliveryMethodId;
+    private String deliveryMethod;
+    private String deliveryAddress;
+    private Long paymentMethodId;
+    private String paymentMethod;
+    
+    // Static services for mapping methods
+    private static DeliveryService deliveryService;
+    private static PaymentService paymentService;
+    
+    @Autowired
+    public void setServices(DeliveryService deliveryService, PaymentService paymentService) {
+        OrderResponse.deliveryService = deliveryService;
+        OrderResponse.paymentService = paymentService;
+    }
     
     public static OrderResponse fromOrder(Order order) {
         OrderResponse response = new OrderResponse();
@@ -28,6 +48,17 @@ public class OrderResponse {
         response.setTotalPrice(order.getTotalPrice());
         response.setStatus(order.getStatus());
         response.setCreatedAt(order.getCreatedAt());
+        response.setDeliveryMethodId(order.getDeliveryMethodId());
+        response.setDeliveryAddress(order.getDeliveryAddress());
+        response.setPaymentMethodId(order.getPaymentMethodId());
+        
+        // Set string representations if services are available
+        if (deliveryService != null && order.getDeliveryMethodId() != null) {
+            response.setDeliveryMethod(deliveryService.getDeliveryMethodCodeById(order.getDeliveryMethodId()));
+        }
+        if (paymentService != null && order.getPaymentMethodId() != null) {
+            response.setPaymentMethod(paymentService.getPaymentMethodCodeById(order.getPaymentMethodId()));
+        }
         
         List<OrderItemDto> items = order.getOrderItems().stream()
             .map(OrderItemDto::fromOrderItem)
@@ -189,5 +220,45 @@ public class OrderResponse {
 
     public void setOrderItems(List<OrderItemDto> orderItems) {
         this.orderItems = orderItems;
+    }
+    
+    public Long getDeliveryMethodId() {
+        return deliveryMethodId;
+    }
+
+    public void setDeliveryMethodId(Long deliveryMethodId) {
+        this.deliveryMethodId = deliveryMethodId;
+    }
+    
+    public String getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(String deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public Long getPaymentMethodId() {
+        return paymentMethodId;
+    }
+
+    public void setPaymentMethodId(Long paymentMethodId) {
+        this.paymentMethodId = paymentMethodId;
+    }
+    
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 } 

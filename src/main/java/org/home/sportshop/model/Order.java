@@ -34,6 +34,15 @@ public class Order {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
+    
+    @Column(name = "payment_method_id")
+    private Long paymentMethodId;
+    
+    @Column(name = "delivery_method_id")
+    private Long deliveryMethodId;
+    
+    @Column(name = "delivery_address")
+    private String deliveryAddress;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
@@ -51,4 +60,10 @@ public class Order {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public List<OrderItem> getOrderItems() { return orderItems; }
     public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
+    public Long getPaymentMethodId() { return paymentMethodId; }
+    public void setPaymentMethodId(Long paymentMethodId) { this.paymentMethodId = paymentMethodId; }
+    public Long getDeliveryMethodId() { return deliveryMethodId; }
+    public void setDeliveryMethodId(Long deliveryMethodId) { this.deliveryMethodId = deliveryMethodId; }
+    public String getDeliveryAddress() { return deliveryAddress; }
+    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
 }

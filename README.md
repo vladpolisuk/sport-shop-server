@@ -16,6 +16,8 @@
 - Управление товарами (просмотр, добавление, редактирование, удаление)
 - Управление клиентами и заказами
 - Система аутентификации и авторизации с ролями (USER, ADMIN)
+- Выбор и расчет стоимости/времени доставки
+- Обработка платежей различными методами
 - Валидация данных и обработка ошибок
 
 ## Требования
@@ -36,6 +38,7 @@
 2. **Настройка базы данных**
    - Создайте базу данных PostgreSQL
    - Обновите параметры подключения в `src/main/resources/application.properties`
+   - Примените SQL-скрипт для создания таблиц (например, `create_entire_db_2.sql`)
 
 3. **Сборка проекта**
 
@@ -76,7 +79,7 @@
 |-------|------|----------|------|
 | GET | /orders | Получение всех заказов | USER, ADMIN |
 | GET | /orders/my | Получение заказов текущего пользователя | USER, ADMIN |
-| POST | /orders | Создание нового заказа | USER, ADMIN |
+| POST | /orders | Создание нового заказа (с указанием клиента, товаров, доставки и оплаты) | USER, ADMIN |
 | PUT | /orders/{id} | Обновление статуса заказа | ADMIN |
 | DELETE | /orders/{id} | Удаление заказа | ADMIN |
 
@@ -88,6 +91,28 @@
 | POST | /customers | Добавление нового клиента | USER, ADMIN |
 | PUT | /customers/{id} | Обновление клиента | USER, ADMIN |
 | DELETE | /customers/{id} | Удаление клиента | ADMIN |
+
+### Доставка (Delivery)
+
+| Метод | Путь | Описание | Роли |
+|-------|------|----------|------|
+| GET | /delivery/methods | Получение доступных методов доставки (коды) | Публичный |
+| GET | /delivery/methods/ids | Получение доступных методов доставки (ID) | Публичный |
+| GET | /delivery/cost | Расчет стоимости доставки (по коду) | Публичный |
+| GET | /delivery/cost/by-id | Расчет стоимости доставки (по ID) | Публичный |
+| GET | /delivery/time | Расчет времени доставки (по коду) | Публичный |
+| GET | /delivery/time/by-id | Расчет времени доставки (по ID) | Публичный |
+| GET | /delivery/available | Проверка доступности доставки (по коду) | Публичный |
+| GET | /delivery/available/by-id | Проверка доступности доставки (по ID) | Публичный |
+
+### Оплата (Payment)
+
+| Метод | Путь | Описание | Роли |
+|-------|------|----------|------|
+| GET | /payments/methods | Получение доступных методов оплаты (коды) | Публичный |
+| GET | /payments/methods/ids | Получение доступных методов оплаты (ID) | Публичный |
+| POST | /payments/process | Обработка платежа (по коду) | USER, ADMIN |
+| POST | /payments/process/by-id | Обработка платежа (по ID) | USER, ADMIN |
 
 ### Аутентификация (Auth)
 
@@ -113,6 +138,8 @@ Authorization: Bearer <token>
 - **order_items**: позиции заказов
 - **users**: пользователи системы
 - **roles**: роли пользователей
+- **payment_methods**: методы оплаты
+- **delivery_methods**: методы доставки
 
 ## Примеры запросов
 
@@ -144,8 +171,19 @@ curl -X GET http://localhost:8080/products
 curl -X POST http://localhost:8080/orders \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"customer":{"id":1},"orderItems":[{"product":{"id":1},"quantity":2}]}'
+  -d '{
+    "customerId": 1,
+    "items": [
+      { "productId": 1, "quantity": 2 },
+      { "productId": 5, "quantity": 1 }
+    ],
+    "deliveryMethod": "COURIER",
+    "deliveryAddress": "г. Москва, ул. Ленина, д.10, кв.5",
+    "paymentMethod": "CREDIT_CARD"
+  }'
 ```
+
+*Примечание: Вместо `deliveryMethod` и `paymentMethod` можно передавать `deliveryMethodId` и `paymentMethodId`.*
 
 ## Разработка
 
